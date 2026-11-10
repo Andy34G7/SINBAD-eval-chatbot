@@ -13,7 +13,7 @@ import java.io.FileOutputStream
 
 /**
  * On-device LLM inference using Google MediaPipe GenAI tasks-genai.
- * Bundled model weights in assets are extracted on first launch to app storage.
+ * Bundled model weights in assets are safely extracted on first launch to app storage.
  */
 class MediaPipeLlmEngine(
     private val context: Context,
@@ -30,8 +30,8 @@ class MediaPipeLlmEngine(
         try {
             val destinationFile = File(context.filesDir, "llm_weights.bin")
             if (!destinationFile.exists() || destinationFile.length() == 0L) {
-                // Attempt to copy from assets if bundled
-                copyAssetToFile(assetModelName, destinationFile)
+                // Safely extract bundled model if present
+                safeExtractAsset(assetModelName, destinationFile)
             }
 
             if (destinationFile.exists() && destinationFile.length() > 0L) {
@@ -49,11 +49,20 @@ class MediaPipeLlmEngine(
         }
     }
 
-    private fun copyAssetToFile(assetName: String, targetFile: File) {
-        context.assets.open(assetName).use { inputStream ->
-            FileOutputStream(targetFile).use { outputStream ->
-                inputStream.copyTo(outputStream)
+    private fun safeExtractAsset(assetName: String, targetFile: File) {
+        val tempFile = File(context.filesDir, "${targetFile.name}.tmp")
+        try {
+            context.assets.open(assetName).use { inputStream ->
+                FileOutputStream(tempFile).use { outputStream ->
+                    inputStream.copyTo(outputStream)
+                }
             }
+            if (tempFile.exists() && tempFile.length() > 0L) {
+                if (targetFile.exists()) targetFile.delete()
+                tempFile.renameTo(targetFile)
+            }
+        } catch (_: Exception) {
+            if (tempFile.exists()) tempFile.delete()
         }
     }
 
@@ -64,9 +73,16 @@ class MediaPipeLlmEngine(
 
         return flow {
             val fullResponse = withContext(Dispatchers.IO) {
-                activeLlm.generateResponse(prompt) ?: ""
+                try {
+                    activeLlm.generateResponse(prompt) ?: ""
+                } catch (_: Exception) {
+                    ""
+                }
             }
-            val words = fullResponse.split(" ")
+            val textToStream = fullResponse.ifEmpty {
+                fallbackEngine.generateResponse(prompt)
+            }
+            val words = textToStream.split(" ")
             for ((idx, word) in words.withIndex()) {
                 val token = if (idx < words.size - 1) "$word " else word
                 emit(token)
@@ -78,7 +94,8 @@ class MediaPipeLlmEngine(
     override suspend fun generateResponse(prompt: String): String = withContext(Dispatchers.IO) {
         val activeLlm = llmInference ?: return@withContext fallbackEngine.generateResponse(prompt)
         try {
-            activeLlm.generateResponse(prompt) ?: ""
+            val response = activeLlm.generateResponse(prompt)
+            if (!response.isNullOrBlank()) response else fallbackEngine.generateResponse(prompt)
         } catch (_: Exception) {
             fallbackEngine.generateResponse(prompt)
         }

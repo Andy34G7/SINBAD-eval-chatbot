@@ -6,7 +6,6 @@ import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
-import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.pdf.PdfDocument
 import com.woundtriage.chat.domain.model.SinbadAssessment
@@ -49,29 +48,29 @@ class CaseSheetPdfGenerator(private val context: Context) {
         // Background
         canvas.drawColor(Color.WHITE)
 
-        var y = 36f
+        var y = 32f
 
         // 1. Header Banner
         paint.color = Color.rgb(15, 118, 110) // Teal 700
         canvas.drawRect(28f, y, PAGE_WIDTH - 28f, y + 42f, paint)
 
         paint.color = Color.WHITE
-        paint.textSize = 15f
+        paint.textSize = 14f
         paint.isFakeBoldText = true
         canvas.drawText("WOUND TRIAGE CASE SHEET (SINBAD VERIFICATION)", 38f, y + 26f, paint)
 
-        y += 54f
+        y += 52f
 
         // 2. Metadata details
         paint.color = Color.rgb(30, 41, 59)
-        paint.textSize = 9.5f
+        paint.textSize = 9f
         paint.isFakeBoldText = false
 
         canvas.drawText("Encounter ID: #${assessment.id}", 32f, y, paint)
         canvas.drawText("Date & Time: ${assessment.formattedDate}", 180f, y, paint)
         canvas.drawText("Language: ${assessment.patientLanguage.englishName} (${assessment.patientLanguage.nativeName})", 380f, y, paint)
 
-        y += 18f
+        y += 16f
 
         // Divider
         paint.color = Color.rgb(226, 232, 240)
@@ -102,38 +101,41 @@ class CaseSheetPdfGenerator(private val context: Context) {
         // Summary Card on right of image
         val summaryLeft = 148f
         val summaryTop = y
+        val summaryWidth = PAGE_WIDTH - 28f - summaryLeft
         paint.color = Color.rgb(248, 250, 252)
         canvas.drawRoundRect(summaryLeft, summaryTop, PAGE_WIDTH - 28f, summaryTop + imageSize, 8f, 8f, paint)
 
         paint.color = Color.rgb(15, 23, 42)
-        paint.textSize = 12f
+        paint.textSize = 11.5f
         paint.isFakeBoldText = true
-        canvas.drawText("Overall SINBAD Score: ${assessment.totalScore} / 6", summaryLeft + 12f, summaryTop + 24f, paint)
+        canvas.drawText("Overall SINBAD Score: ${assessment.totalScore} / 6", summaryLeft + 12f, summaryTop + 20f, paint)
 
-        paint.textSize = 10f
+        paint.textSize = 9.5f
         val severityColor = when (assessment.totalScore) {
             in 0..1 -> Color.rgb(22, 163, 74) // Green
             in 2..3 -> Color.rgb(217, 119, 6) // Amber
             else -> Color.rgb(220, 38, 38) // Red
         }
         paint.color = severityColor
-        canvas.drawText("Clinical Risk Band: ${assessment.severity.title}", summaryLeft + 12f, summaryTop + 42f, paint)
+        canvas.drawText("Clinical Risk Band: ${assessment.severity.title}", summaryLeft + 12f, summaryTop + 36f, paint)
 
         paint.color = Color.rgb(71, 85, 105)
         paint.isFakeBoldText = false
-        paint.textSize = 8.5f
-        canvas.drawText("• S - Site: ${assessment.patientScores[SinbadDimension.SITE]?.score ?: 0} pt", summaryLeft + 12f, summaryTop + 60f, paint)
-        canvas.drawText("• I - Ischemia: ${assessment.patientScores[SinbadDimension.ISCHEMIA]?.score ?: 0} pt", summaryLeft + 110f, summaryTop + 60f, paint)
-        canvas.drawText("• N - Neuropathy: ${assessment.patientScores[SinbadDimension.NEUROPATHY]?.score ?: 0} pt", summaryLeft + 220f, summaryTop + 60f, paint)
+        paint.textSize = 8f
+        canvas.drawText("• S - Site: ${assessment.patientScores[SinbadDimension.SITE]?.score ?: 0} pt", summaryLeft + 12f, summaryTop + 52f, paint)
+        canvas.drawText("• I - Ischemia: ${assessment.patientScores[SinbadDimension.ISCHEMIA]?.score ?: 0} pt", summaryLeft + 110f, summaryTop + 52f, paint)
+        canvas.drawText("• N - Neuropathy: ${assessment.patientScores[SinbadDimension.NEUROPATHY]?.score ?: 0} pt", summaryLeft + 220f, summaryTop + 52f, paint)
 
-        canvas.drawText("• B - Infection: ${assessment.patientScores[SinbadDimension.BACTERIAL_INFECTION]?.score ?: 0} pt", summaryLeft + 12f, summaryTop + 76f, paint)
-        canvas.drawText("• A - Area: ${assessment.patientScores[SinbadDimension.AREA]?.score ?: 0} pt", summaryLeft + 110f, summaryTop + 76f, paint)
-        canvas.drawText("• D - Depth: ${assessment.patientScores[SinbadDimension.DEPTH]?.score ?: 0} pt", summaryLeft + 220f, summaryTop + 76f, paint)
+        canvas.drawText("• B - Infection: ${assessment.patientScores[SinbadDimension.BACTERIAL_INFECTION]?.score ?: 0} pt", summaryLeft + 12f, summaryTop + 68f, paint)
+        canvas.drawText("• A - Area: ${assessment.patientScores[SinbadDimension.AREA]?.score ?: 0} pt", summaryLeft + 110f, summaryTop + 68f, paint)
+        canvas.drawText("• D - Depth: ${assessment.patientScores[SinbadDimension.DEPTH]?.score ?: 0} pt", summaryLeft + 220f, summaryTop + 68f, paint)
 
         if (assessment.emergencyFlag) {
             paint.color = Color.rgb(220, 38, 38)
             paint.isFakeBoldText = true
-            canvas.drawText("! EMERGENCY FLAG TRIGGERED: ${assessment.emergencyReason ?: "High risk infection"}", summaryLeft + 12f, summaryTop + 92f, paint)
+            val alert = "⚠ EMERGENCY DETECTED: ${assessment.emergencyReason ?: "High risk infection"}"
+            val clippedAlert = ellipsize(alert, paint, summaryWidth - 24f)
+            canvas.drawText(clippedAlert, summaryLeft + 12f, summaryTop + 86f, paint)
         }
 
         y += imageSize + 16f
@@ -143,19 +145,19 @@ class CaseSheetPdfGenerator(private val context: Context) {
         canvas.drawRect(28f, y, PAGE_WIDTH - 28f, y + 20f, paint)
 
         paint.color = Color.rgb(30, 41, 59)
-        paint.textSize = 8.5f
+        paint.textSize = 8f
         paint.isFakeBoldText = true
 
         canvas.drawText("DIMENSION", 34f, y + 14f, paint)
-        canvas.drawText("CLASSIFIER BASELINE", 110f, y + 14f, paint)
-        canvas.drawText("PATIENT CONFIRMATION & QUOTE", 240f, y + 14f, paint)
+        canvas.drawText("CLASSIFIER BASELINE", 112f, y + 14f, paint)
+        canvas.drawText("PATIENT CONFIRMATION & QUOTE", 236f, y + 14f, paint)
         canvas.drawText("SCORE", PAGE_WIDTH - 65f, y + 14f, paint)
 
         y += 24f
 
         // Table Rows
         paint.isFakeBoldText = false
-        paint.textSize = 8f
+        paint.textSize = 7.5f
 
         for (dim in SinbadDimension.ORDERED_DIMENSIONS) {
             val clf = assessment.classifierScores[dim]
@@ -163,7 +165,7 @@ class CaseSheetPdfGenerator(private val context: Context) {
             val confirmedScore = pt?.score ?: clf?.score ?: 0
             val isDiscrepancy = pt != null && clf != null && pt.score != clf.score
 
-            // Alternating row background
+            // Alternating row background for discrepancies
             if (isDiscrepancy) {
                 paint.color = Color.rgb(254, 242, 242) // subtle reddish highlight
                 canvas.drawRect(28f, y - 4f, PAGE_WIDTH - 28f, y + 36f, paint)
@@ -176,13 +178,16 @@ class CaseSheetPdfGenerator(private val context: Context) {
             paint.isFakeBoldText = false
             paint.color = Color.rgb(71, 85, 105)
             val clfDesc = if (clf?.score == 1) dim.oneDesc else dim.zeroDesc
-            canvas.drawText(clfDesc.take(30) + (if (clfDesc.length > 30) "…" else ""), 110f, y + 10f, paint)
+            val ellipClf = ellipsize(clfDesc, paint, 118f)
+            canvas.drawText(ellipClf, 112f, y + 10f, paint)
 
-            val quote = pt?.patientRawQuote?.let { "\"${it.take(45)}\"" } ?: "Pending"
-            canvas.drawText(quote, 240f, y + 10f, paint)
+            val quote = pt?.patientRawQuote?.let { "\"$it\"" } ?: "Pending"
+            val ellipQuote = ellipsize(quote, paint, 260f)
+            canvas.drawText(ellipQuote, 236f, y + 10f, paint)
 
             val summary = pt?.clinicalSummary ?: "Not answered"
-            canvas.drawText(summary.take(48), 240f, y + 22f, paint)
+            val ellipSummary = ellipsize(summary, paint, 260f)
+            canvas.drawText(ellipSummary, 236f, y + 22f, paint)
 
             paint.isFakeBoldText = true
             paint.color = if (confirmedScore == 1) Color.rgb(185, 28, 28) else Color.rgb(21, 128, 61)
@@ -193,9 +198,24 @@ class CaseSheetPdfGenerator(private val context: Context) {
 
         y += 8f
 
+        // Reported Symptoms Ledger Box (if present)
+        if (assessment.reportedSymptoms.isNotEmpty()) {
+            paint.color = Color.rgb(241, 245, 249)
+            canvas.drawRoundRect(28f, y, PAGE_WIDTH - 28f, y + 32f, 4f, 4f, paint)
+            paint.color = Color.rgb(30, 41, 59)
+            paint.textSize = 8f
+            paint.isFakeBoldText = true
+            canvas.drawText("REPORTED SYMPTOMS:", 36f, y + 12f, paint)
+            paint.isFakeBoldText = false
+            paint.color = Color.rgb(71, 85, 105)
+            val symptomsText = ellipsize(assessment.reportedSymptoms.joinToString(" • "), paint, PAGE_WIDTH - 80f)
+            canvas.drawText(symptomsText, 36f, y + 24f, paint)
+            y += 40f
+        }
+
         // 5. Universal Physician Referral Disclaimer Box
         val noticeBoxTop = y
-        val noticeBoxHeight = 88f
+        val noticeBoxHeight = 84f
         paint.color = Color.rgb(254, 243, 199) // Amber 100
         canvas.drawRoundRect(28f, noticeBoxTop, PAGE_WIDTH - 28f, noticeBoxTop + noticeBoxHeight, 6f, 6f, paint)
 
@@ -206,22 +226,31 @@ class CaseSheetPdfGenerator(private val context: Context) {
         paint.style = Paint.Style.FILL
 
         paint.color = Color.rgb(146, 64, 14)
-        paint.textSize = 9.5f
+        paint.textSize = 9f
         paint.isFakeBoldText = true
-        canvas.drawText("MANDATORY CLINICAL REFERRAL & NON-DIAGNOSTIC NOTICE", 38f, noticeBoxTop + 18f, paint)
+        canvas.drawText("MANDATORY CLINICAL REFERRAL & NON-DIAGNOSTIC NOTICE", 38f, noticeBoxTop + 16f, paint)
 
-        paint.textSize = 8f
+        paint.textSize = 7.5f
         paint.isFakeBoldText = false
         paint.color = Color.rgb(120, 53, 15)
-        canvas.drawText("• This report is an AI-assisted triage document generated directly on-device to structure wound evaluation.", 38f, noticeBoxTop + 34f, paint)
-        canvas.drawText("• It DOES NOT provide a definitive diagnosis, treatment plan, or medication prescription.", 38f, noticeBoxTop + 48f, paint)
-        canvas.drawText("• Universal Recommendation: All patients must undergo an in-person clinical examination by a physician or specialist.", 38f, noticeBoxTop + 62f, paint)
-        canvas.drawText("• If signs of systemic toxicity, expanding cellulitis, or gangrene are present, seek immediate emergency medical care.", 38f, noticeBoxTop + 76f, paint)
+        canvas.drawText("• This report is an AI-assisted triage document generated directly on-device to structure wound evaluation.", 38f, noticeBoxTop + 30f, paint)
+        canvas.drawText("• It DOES NOT provide a definitive diagnosis, treatment plan, or medication prescription.", 38f, noticeBoxTop + 44f, paint)
+        canvas.drawText("• Universal Recommendation: All patients must undergo an in-person clinical examination by a physician or specialist.", 38f, noticeBoxTop + 58f, paint)
+        canvas.drawText("• If signs of systemic toxicity, expanding cellulitis, or gangrene are present, seek immediate emergency medical care.", 38f, noticeBoxTop + 72f, paint)
 
         // Footer
         paint.color = Color.rgb(148, 163, 184)
         paint.textSize = 7.5f
         canvas.drawText("Generated locally on device via LiteRT & MediaPipe GenAI • Confidential Medical Triage Record", 110f, PAGE_HEIGHT - 20f, paint)
+    }
+
+    private fun ellipsize(text: String, paint: Paint, maxWidth: Float): String {
+        if (paint.measureText(text) <= maxWidth) return text
+        var truncated = text
+        while (truncated.isNotEmpty() && paint.measureText("$truncated…") > maxWidth) {
+            truncated = truncated.dropLast(1)
+        }
+        return "$truncated…"
     }
 
     private fun loadWoundBitmap(path: String?): Bitmap? {
