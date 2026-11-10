@@ -18,6 +18,13 @@ class IndicTranslationsTest {
             assertNotNull(greeting)
             assertFalse("Greeting should not be blank for ${lang.englishName}", greeting.isBlank())
         }
+
+        // Verify Malayalam & Gujarati greetings are in their respective scripts
+        val mlGreeting = IndicTranslations.getGreeting(Language.MALAYALAM)
+        assertTrue(mlGreeting.contains("നമസ്കാരം"))
+
+        val guGreeting = IndicTranslations.getGreeting(Language.GUJARATI)
+        assertTrue(guGreeting.contains("નમસ્તે"))
     }
 
     @Test
@@ -68,5 +75,20 @@ class IndicTranslationsTest {
 
         assertEquals(1, IndicTranslations.parsePatientResponse(SinbadDimension.NEUROPATHY, "हाँ सुन्न हो गया है").first)
         assertEquals(1, IndicTranslations.parsePatientResponse(SinbadDimension.BACTERIAL_INFECTION, "हाँ मवाद निकल रहा है").first)
+    }
+
+    @Test
+    fun testPatientResponseParsingMalayalamAndGujarati() {
+        // Malayalam
+        assertEquals(0, IndicTranslations.parsePatientResponse(SinbadDimension.SITE, "കാൽവിരലുകളിൽ ആണ്").first)
+        assertEquals(1, IndicTranslations.parsePatientResponse(SinbadDimension.SITE, "ഉപ്പൂറ്റിയിൽ ആണ്").first)
+        assertEquals(1, IndicTranslations.parsePatientResponse(SinbadDimension.ISCHEMIA, "അതെ തണുപ്പാണ്").first)
+        assertEquals(1, IndicTranslations.parsePatientResponse(SinbadDimension.BACTERIAL_INFECTION, "പഴുപ്പ് വരുന്നുണ്ട്").first)
+
+        // Gujarati
+        assertEquals(0, IndicTranslations.parsePatientResponse(SinbadDimension.SITE, "પગની આંગળી પર છે").first)
+        assertEquals(1, IndicTranslations.parsePatientResponse(SinbadDimension.SITE, "એડી પર છે").first)
+        assertEquals(1, IndicTranslations.parsePatientResponse(SinbadDimension.ISCHEMIA, "હા ઠંડુ રહે છે").first)
+        assertEquals(1, IndicTranslations.parsePatientResponse(SinbadDimension.BACTERIAL_INFECTION, "પરુ નીકળે છે").first)
     }
 }

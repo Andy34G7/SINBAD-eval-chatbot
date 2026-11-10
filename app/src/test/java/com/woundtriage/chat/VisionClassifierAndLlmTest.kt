@@ -44,6 +44,16 @@ class VisionClassifierAndLlmTest {
         val engine = MockTriageLlmEngine()
         val response = engine.generateResponse("Prompt asking about SITE")
         assertNotNull(response)
-        assertTrue(response.contains("location", ignoreCase = true) || response.contains("toe", ignoreCase = true))
+        assertTrue(response.contains("location", ignoreCase = true) || response.contains("toes", ignoreCase = true))
+    }
+
+    @Test
+    fun testMockTriageLlmEnginePromptInHindi() = runBlocking {
+        val engine = MockTriageLlmEngine()
+        val prompt = "You are an empathetic medical triage assistant. You must converse strictly in Hindi (हिन्दी). Ask exactly 1 clear, compassionate question about diabetic foot ulcer Ischemia dimension. Do not diagnose."
+        val response = engine.generateResponse(prompt)
+        assertNotNull(response)
+        // Should produce Hindi question regarding ischemia / cold foot
+        assertTrue(response.contains("ठंडा") || response.contains("पैर"))
     }
 }

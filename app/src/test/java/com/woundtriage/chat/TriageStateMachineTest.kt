@@ -2,6 +2,7 @@ package com.woundtriage.chat
 
 import com.woundtriage.chat.domain.model.ClassifierPrediction
 import com.woundtriage.chat.domain.model.Language
+import com.woundtriage.chat.domain.model.MessageSender
 import com.woundtriage.chat.domain.model.SinbadAssessment
 import com.woundtriage.chat.domain.model.SinbadDimension
 import com.woundtriage.chat.domain.model.SinbadSeverity
@@ -78,6 +79,44 @@ class TriageStateMachineTest {
         val ischemiaConfirmation = assessment.patientScores[SinbadDimension.ISCHEMIA]
         assertNotNull(ischemiaConfirmation)
         assertTrue(ischemiaConfirmation!!.discrepancyWithClassifier)
+
+        // Verify reported symptoms populated
+        assertTrue(assessment.reportedSymptoms.isNotEmpty())
+    }
+
+    @Test
+    fun testEmergencyHandlingAndSpecializedAcknowledgment() {
+        val stateMachine = TriageStateMachine(language = Language.ENGLISH)
+        val baseline = SinbadDimension.ORDERED_DIMENSIONS.associateWith { dim ->
+            ClassifierPrediction(dim, score = 0, confidence = 0.8f, rationale = "Baseline normal")
+        }
+        stateMachine.startWithClassifierBaseline("/path/wound.jpg", baseline)
+
+        // User responds with emergency symptoms (high fever)
+        val replies = stateMachine.processUserMessage("The wound is on my toe, but I have a high fever of 103 and chills.")
+
+        // Should include an emergency message
+        assertTrue(replies.any { it.sender == MessageSender.EMERGENCY })
+
+        // Assessment should have emergency flag set
+        val assessment = stateMachine.getCurrentAssessment()
+        assertTrue(assessment.emergencyFlag)
+        assertNotNull(assessment.emergencyReason)
+
+        // Assistant question should contain emergency-aware cautionary acknowledgment
+        val assistantReply = replies.firstOrNull { it.sender == MessageSender.ASSISTANT }
+        assertNotNull(assistantReply)
+        assertTrue(assistantReply!!.text.contains("NOTE:", ignoreCase = true) || assistantReply.text.contains("urgent", ignoreCase = true))
+    }
+
+    @Test
+    fun testLlmPromptConstruction() {
+        val stateMachine = TriageStateMachine(language = Language.HINDI)
+        val prompt = stateMachine.constructLlmPrompt(SinbadDimension.ISCHEMIA, "Arterial perfusion unverified")
+
+        assertTrue(prompt.contains("Hindi", ignoreCase = true) || prompt.contains("हिन्दी"))
+        assertTrue(prompt.contains("Ischemia", ignoreCase = true))
+        assertTrue(prompt.contains("Do not diagnose", ignoreCase = true))
     }
 
     @Test
