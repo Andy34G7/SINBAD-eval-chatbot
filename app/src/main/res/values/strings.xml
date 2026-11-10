@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">Wound Triage</string>
+    <string name="medical_disclaimer_title">Notice: Non-Diagnostic Triage</string>
+    <string name="medical_disclaimer_body">This app is an informational triage aid and does not provide medical diagnoses or treatment prescriptions. Always seek the advice of a qualified physician or foot care specialist.</string>
+    <string name="emergency_warning">EMERGENCY ALERT: Severe systemic infection signs detected (such as high fever, spreading red streaks, or black/dead tissue). Please seek immediate urgent medical care or emergency services.</string>
+</resources>
