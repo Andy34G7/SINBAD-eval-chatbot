@@ -21,14 +21,18 @@ object IndicTranslations {
             "নমস্কার। আমি আপনার ক্ষত যত্ন ট্রায়াজ সহকারী। আপনার ক্ষতের ছবি পেয়েছি। ডাক্তারের জন্য সম্পূর্ণ রিপোর্ট তৈরির জন্য আমি ৬টি সহজ প্রশ্ন জিজ্ঞাসা করব।"
         Language.MARATHI ->
             "नमस्कार. मी तुमचा जखम काळजी ट्रायज सहाय्यक आहे. तुमच्या जखमेचा फोटो प्राप्त झाला आहे. डॉक्टरांसाठी केस शीट तयार करण्यासाठी मी 6 सोपे प्रश्न विचारणार आहे."
-        else ->
+        Language.MALAYALAM ->
+            "നമസ്കാരം. ഞാൻ നിങ്ങളുടെ മുറിവ് പരിചരണ ട്രയാജ് സഹായിയാണ്. നിങ്ങളുടെ മുറിവിന്റെ ഫോട്ടോ ലഭിച്ചു. ഡോക്ടർക്ക് കാണിക്കാൻ ഒരു കേസ് ഷീറ്റ് തയ്യാറാക്കാൻ ഞാൻ 6 ലളിതമായ ചോദ്യങ്ങൾ ചോദിക്കാം."
+        Language.GUJARATI ->
+            "નમસ્તે. હું તમારો ઘા સંભાળ ટ્રાયઝ સહાયક છું. તમારા ઘાનો ફોટો મળી ગયો છે. ડૉક્ટર માટે સંપૂર્ણ કેસ શીટ તૈયાર કરવા માટે હું તમને 6 સરળ પ્રશ્નો પૂછીશ."
+        Language.ENGLISH ->
             "Hello. I am your wound triage assistant. I have received your wound image. To help prepare a thorough Case Sheet for your doctor, I will ask you 6 quick, straightforward questions about the wound. Let's begin."
     }
 
     /**
      * Conversational question for a specific SINBAD dimension in the selected language.
      */
-    fun getQuestion(dimension: SinbadDimension, language: Language, classifierHint: String? = null): String {
+    fun getQuestion(dimension: SinbadDimension, language: Language, @Suppress("UNUSED_PARAMETER") classifierHint: String? = null): String {
         return when (dimension) {
             SinbadDimension.SITE -> when (language) {
                 Language.HINDI -> "यह घाव आपके पैर के किस हिस्से में है? क्या यह पैर की उंगलियों/सामने के हिस्से पर है, या तलवे के बीच/एड़ी पर?"
@@ -37,7 +41,9 @@ object IndicTranslations {
                 Language.KANNADA -> "ಈ ಗಾಯ ನಿಮ್ಮ ಕಾಲಿನಲ್ಲಿ ಎಲ್ಲಿದೆ? ಕಾಲ್ಬೆರಳುಗಳಲ್ಲೇ ಅಥವಾ ಹಿಮ್ಮಡಿ/ಅಂಗಾಲಿನಲ್ಲೇ?"
                 Language.BENGALI -> "এই ক্ষতটি আপনার পায়ের ঠিক কোথায়? পায়ের আঙুল/সামনে, নাকি পায়ের পাতা/গোড়ালিতে?"
                 Language.MARATHI -> "ही जखम तुमच्या पायावर नेमकी कुठे आहे? पायाच्या बोटांवर/पुढील भागात की टाच/तळपायाच्या मध्यभागी?"
-                else -> "Where exactly is this wound situated on your foot? Is it on your toes or front of the foot, or is it on the arch, sole, or heel?"
+                Language.MALAYALAM -> "ഈ മുറിവ് നിങ്ങളുടെ കാലിൽ എവിടെയാണ്? കാൽവിരലുകളിലോ മുൻഭാഗത്തോ ആണോ, അതോ ഉപ്പൂറ്റിയിലോ പാദത്തിന്റെ അടിയിലോ ആണോ?"
+                Language.GUJARATI -> "આ ઘા તમારા પગ પર ક્યાં છે? પગની આંગળીઓ પર/આગળના ભાગમાં છે, કે પછી એડી/તળિયાના ભાગમાં છે?"
+                Language.ENGLISH -> "Where exactly is this wound situated on your foot? Is it on your toes or front of the foot, or is it on the arch, sole, or heel?"
             }
 
             SinbadDimension.ISCHEMIA -> when (language) {
@@ -47,7 +53,9 @@ object IndicTranslations {
                 Language.KANNADA -> "ನಿಮ್ಮ ಕಾಲು ಅತಿಯಾಗಿ ತಂಪಾಗಿದೆಯೇ ಅಥವಾ ನಡೆಯುವಾಗ ಕಾಲಿನ ಸ್ನಾಯುಗಳಲ್ಲಿ ನೋವು ಬರುತ್ತಿದೆಯೇ?"
                 Language.BENGALI -> "আপনার পা কি অস্বাভাবিক ঠান্ডা লাগে, অথবা হাঁটার সময় পায়ে টান বা তীব্র ব্যথা অনুভূত হয়?"
                 Language.MARATHI -> "तुमचा तो पाय नेहमीपेक्षा थंड पडतो का, किंवा चालताना पोटरीमध्ये पेटके किंवा वेदना होतात का?"
-                else -> "Does your foot often feel noticeably cold to touch, or do you experience cramping or pain in your calf muscles when walking?"
+                Language.MALAYALAM -> "നിങ്ങളുടെ ആ കാൽ സാധാരണയേക്കാൾ തണുപ്പായി തോന്നുന്നുണ്ടോ, അല്ലെങ്കിൽ നടക്കുമ്പോൾ പേശികളിൽ വേദനയോ കോച്ചിലോ ഉണ്ടാകാറുണ്ടോ?"
+                Language.GUJARATI -> "શું તમારો તે પગ સામાન્ય કરતાં ઠંડો લાગે છે, અથવા ચાલતી વખતે પિંડીઓમાં દુખાવો કે ખેંચાણ થાય છે?"
+                Language.ENGLISH -> "Does your foot often feel noticeably cold to touch, or do you experience cramping or pain in your calf muscles when walking?"
             }
 
             SinbadDimension.NEUROPATHY -> when (language) {
@@ -57,7 +65,9 @@ object IndicTranslations {
                 Language.KANNADA -> "ಗಾಯವಿರುವ ಕಾಲಿನಲ್ಲಿ ಮರಗಟ್ಟುವಿಕೆ, ಮುಳ್ಳು ಚುಚ್ಚಿದಂತೆ ಅನಿಸುವುದು ಅಥವಾ ಸ್ಪರ್ಶ ತಿಳಿಯದಿರುವುದು ಇದೆಯೇ?"
                 Language.BENGALI -> "ক্ষতযুক্ত পায়ে কি অসাড়তা, ঝিঁঝিঁ ধরা বা স্পর্শ করলে সঠিকভাবে অনুভব করতে পারছেন না?"
                 Language.MARATHI -> "जखम असलेल्या पायात बधिरपणा, मुंग्या येणे किंवा स्पर्श न जाणवणे असा त्रास होतो का?"
-                else -> "In that foot, do you experience any numbness, burning, pins-and-needles, or reduced ability to feel sensations when touched?"
+                Language.MALAYALAM -> "മുറിവുള്ള കാലിൽ മരവിപ്പ്, തരിപ്പ് (സൂചി കുത്തുന്നതുപോലെയുള്ള അനുഭവം), അല്ലെങ്കിൽ സ്പർശനം അറിയാത്ത അവസ്ഥ ഉണ്ടോ?"
+                Language.GUJARATI -> "શું ઘા વાળા પગમાં ખાલી ચડવી, ઝણઝણાટી કે સ્પર્શ ન સમજાવા જેવી સમસ્યા છે?"
+                Language.ENGLISH -> "In that foot, do you experience any numbness, burning, pins-and-needles, or reduced ability to feel sensations when touched?"
             }
 
             SinbadDimension.BACTERIAL_INFECTION -> when (language) {
@@ -67,7 +77,9 @@ object IndicTranslations {
                 Language.KANNADA -> "ಗಾಯದ ಸುತ್ತಲೂ ಕೆಂಪಾಗುವುದು, ಊತ, ವಿಪರೀತ ಬಿಸಿ, ವಾಸನೆ ಅಥವಾ ಕೀವು ಬರುತ್ತಿದೆಯೇ?"
                 Language.BENGALI -> "ক্ষতের চারপাশে কি অতিরিক্ত লালচে ভাব, ফোলা, গরম অনুভূতি, দুর্গন্ধ বা পুঁজ বের হচ্ছে?"
                 Language.MARATHI -> "जखमेभोवती खूप लालसरपणा, सूज, उष्णता, दुर्गंधी किंवा पू येत आहे का?"
-                else -> "Do you notice swelling, significant warmth, expanding redness, a bad odor, or any pus or fluid oozing from the wound?"
+                Language.MALAYALAM -> "മുറിവിന് ചുറ്റും കടുത്ത ചുവപ്പ്, വീക്കം, ചൂട്, ദുർഗന്ധം അല്ലെങ്കിൽ പഴുപ്പ് കാണപ്പെടുന്നുണ്ടോ?"
+                Language.GUJARATI -> "શું ઘાની આસપાસ ખૂબ લાલાશ, સોજો, ગરમી, દુર્ગંધ કે પરુ વહી રહ્યું છે?"
+                Language.ENGLISH -> "Do you notice swelling, significant warmth, expanding redness, a bad odor, or any pus or fluid oozing from the wound?"
             }
 
             SinbadDimension.AREA -> when (language) {
@@ -77,7 +89,9 @@ object IndicTranslations {
                 Language.KANNADA -> "ಗಾಯದ ಗಾತ್ರ ಸರಿಸುಮಾರು ಎಷ್ಟಿದೆ? ಒಂದು ನಾಣ್ಯಕ್ಕಿಂತ ಚಿಕ್ಕದಾಗಿದೆಯೇ ಅಥವಾ ದೊಡ್ಡದಾಗಿದೆಯೇ?"
                 Language.BENGALI -> "ক্ষতের আকার আনুমানিক কতটা? একটি ছোট মুদ্রার চেয়ে ছোট, নাকি তার চেয়ে বড়?"
                 Language.MARATHI -> "जखमेचा आकार साधारण किती आहे? एका नाण्यापेक्षा किंवा बोटाच्या पेऱ्यापेक्षा लहान आहे की मोठा?"
-                else -> "Roughly how large is the open wound? Is it smaller than a standard coin (fingertip size / under 1 cm²), or is it larger?"
+                Language.MALAYALAM -> "മുറിവിന്റെ വലിപ്പം ഏകദേശം എത്രയാണ്? ഒരു ചെറിയ നാണയത്തേക്കാൾ ചെറുതാണോ, അതോ വലുതാണോ?"
+                Language.GUJARATI -> "ઘાનું કદ અંદાજે કેટલું છે? 1 રૂપિયાના સિક્કા કરતાં નાનું છે, કે તેનાથી મોટું છે?"
+                Language.ENGLISH -> "Roughly how large is the open wound? Is it smaller than a standard coin (fingertip size / under 1 cm²), or is it larger?"
             }
 
             SinbadDimension.DEPTH -> when (language) {
@@ -87,7 +101,9 @@ object IndicTranslations {
                 Language.KANNADA -> "ಇದು ಚರ್ಮದ ಮೇಲ್ಭಾಗದಲ್ಲಿ ಮಾತ್ರವಿದೆಯೇ, ಅಥವಾ ಆಳವಾಗಿ ಮೂಳೆ ಅಥವಾ ಸ್ನಾಯು ಕಾಣಿಸುತ್ತಿದೆಯೇ?"
                 Language.BENGALI -> "এটি কি কেবল চামড়ার ওপরের ক্ষত, নাকি বেশ গভীর যেখানে হাড় বা গভীর টিস্যু দেখা যাচ্ছে?"
                 Language.MARATHI -> "ही फक्त त्वचेवरची वरवरची जखम आहे, की खूप खोल जाऊन आतले स्नायू किंवा हाड दिसत आहे?"
-                else -> "Is this a surface-level skin sore, or does it feel deep into the flesh, potentially exposing tendon or bone?"
+                Language.MALAYALAM -> "ഇത് തൊലിയുടെ മുകൾഭാഗത്തുള്ള മുറിവാണോ, അതോ മാംസവും അസ്ഥിയും കാണത്തക്കവിധം ആഴത്തിലുള്ളതാണോ?"
+                Language.GUJARATI -> "શું આ ફક્ત ચામડી પરનો સપાટીનો ઘા છે, કે ખૂબ ઊંડો છે જેમાં માંસ અથવા હાડકું દેખાય છે?"
+                Language.ENGLISH -> "Is this a surface-level skin sore, or does it feel deep into the flesh, potentially exposing tendon or bone?"
             }
         }
     }
@@ -108,7 +124,9 @@ object IndicTranslations {
             "అవును", "చల్లగా", "తిమ్మిరి", "చీము", "పెద్దది", "లోతు", "ఎముక", "మడమ",
             "ಹೌದು", "ತಂಪು", "ಮರಗಟ್ಟುವಿಕೆ", "ಕೀವು", "ದೊಡ್ಡದು", "ಆಳ", "ಮೂಳೆ", "ಹಿಮ್ಮಡಿ",
             "হ্যাঁ", "ঠান্ডা", "অসাড়", "পুঁজ", "বড়", "গভীর", "হাড়", "গোড়ালি",
-            "होय", "थंड", "बधिर", "पू", "मोठी", "खोल", "हाड", "टाच"
+            "होय", "थंड", "बधिर", "पू", "मोठी", "खोल", "हाड", "टाच",
+            "അതെ", "ഉണ്ട്", "തണുപ്പ്", "മരവിപ്പ്", "പഴുപ്പ്", "വലുത്", "ആഴം", "അസ്ഥി", "ഉപ്പൂറ്റി",
+            "હા", "હાજી", "ઠંડુ", "ખાલી", "પરુ", "મોટો", "ઊંડો", "હાડકું", "એડી"
         )
 
         val negativeSigns = listOf(
@@ -118,7 +136,9 @@ object IndicTranslations {
             "లేదు", "సాధారణ", "చిన్నది", "వేలు",
             "ಇಲ್ಲ", "ಸಾಮಾನ್ಯ", "ಸಣ್ಣದು", "ಬೆರಳು",
             "না", "স্বাভাবিক", "ছোট", "আঙুল",
-            "नाही", "सामान्य", "लहान", "बोट"
+            "नाही", "सामान्य", "लहान", "बोट",
+            "ഇല്ല", "ചൂട്", "സാധാരണ", "ചെറുത്", "വിരൽ",
+            "ના", "નથી", "ગરમ", "સામાન્ય", "નાનો", "આંગળી", "સપાટી"
         )
 
         val posMatches = positiveSigns.count { lower.contains(it) }
@@ -127,9 +147,9 @@ object IndicTranslations {
         return when (dimension) {
             SinbadDimension.SITE -> {
                 // 0 = Forefoot (toes), 1 = Midfoot/Hindfoot (heel, sole)
-                if (lower.contains("toe") || lower.contains("front") || lower.contains("उंगली") || lower.contains("விரல்") || lower.contains("వేలు")) {
+                if (lower.contains("toe") || lower.contains("front") || lower.contains("उंगली") || lower.contains("விரல்") || lower.contains("వేలు") || lower.contains("വിരൽ") || lower.contains("આંગળી")) {
                     Pair(0, "Forefoot (toes/metatarsals) confirmed by patient")
-                } else if (lower.contains("heel") || lower.contains("sole") || lower.contains("arch") || lower.contains("एड़ी") || lower.contains("तलवा") || lower.contains("குதிக்கால்") || lower.contains("మడమ")) {
+                } else if (lower.contains("heel") || lower.contains("sole") || lower.contains("arch") || lower.contains("एड़ी") || lower.contains("तलवा") || lower.contains("குதிக்கால்") || lower.contains("మడమ") || lower.contains("ഉപ്പൂറ്റി") || lower.contains("એડી")) {
                     Pair(1, "Midfoot / Hindfoot location confirmed by patient")
                 } else if (posMatches > negMatches) {
                     Pair(1, "Patient indicated midfoot / hindfoot area")
@@ -167,9 +187,9 @@ object IndicTranslations {
 
             SinbadDimension.AREA -> {
                 // 0 = < 1cm², 1 = ≥ 1cm²
-                if (lower.contains("small") || lower.contains("coin") && lower.contains("smaller") || lower.contains("छोटा") || lower.contains("சிறிய") || lower.contains("చిన్న")) {
+                if (lower.contains("small") || lower.contains("coin") && lower.contains("smaller") || lower.contains("छोटा") || lower.contains("சிறிய") || lower.contains("చిన్న") || lower.contains("ചെറുത്") || lower.contains("નાનો")) {
                     Pair(0, "Ulcer area reported under 1 cm²")
-                } else if (lower.contains("big") || lower.contains("large") || lower.contains("बड़ा") || lower.contains("பெரிய") || lower.contains("పెద్ద")) {
+                } else if (lower.contains("big") || lower.contains("large") || lower.contains("बड़ा") || lower.contains("பெரிய") || lower.contains("పెద్ద") || lower.contains("വലുത്") || lower.contains("મોટો")) {
                     Pair(1, "Ulcer area reported ≥ 1 cm²")
                 } else if (posMatches > negMatches) {
                     Pair(1, "Ulcer area reported ≥ 1 cm²")
@@ -180,9 +200,9 @@ object IndicTranslations {
 
             SinbadDimension.DEPTH -> {
                 // 0 = Superficial, 1 = Deep (tendon/bone)
-                if (lower.contains("deep") || lower.contains("bone") || lower.contains("tendon") || lower.contains("गहरा") || lower.contains("हड्डी") || lower.contains("ஆழம்") || lower.contains("లోతు")) {
+                if (lower.contains("deep") || lower.contains("bone") || lower.contains("tendon") || lower.contains("गहरा") || lower.contains("हड्डी") || lower.contains("ஆழம்") || lower.contains("లోతు") || lower.contains("ആഴം") || lower.contains("ઊંડો")) {
                     Pair(1, "Deep ulcer involvement (tendon/bone/subcutis) reported")
-                } else if (lower.contains("surface") || lower.contains("superficial") || lower.contains("skin") || lower.contains("सतही")) {
+                } else if (lower.contains("surface") || lower.contains("superficial") || lower.contains("skin") || lower.contains("सतही") || lower.contains("સપાટી")) {
                     Pair(0, "Superficial ulcer confined to epidermis/dermis")
                 } else if (posMatches > negMatches) {
                     Pair(1, "Deep ulcer characteristics indicated")

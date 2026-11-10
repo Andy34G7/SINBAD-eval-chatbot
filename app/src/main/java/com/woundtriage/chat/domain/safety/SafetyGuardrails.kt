@@ -15,37 +15,74 @@ sealed class SafetyCheckResult {
  */
 object SafetyGuardrails {
 
-    // Red flag trigger keywords across English and romanized/Indic terms
+    // Red flag trigger keywords across English, Romanized Indic, and native Indic scripts
     private val EMERGENCY_KEYWORDS = listOf(
+        // English
         "fever", "chills", "high temp", "102", "103", "104", "shivering",
         "red streaks", "streaking", "spreading red", "spreading fast",
         "black skin", "black tissue", "turned black", "gangrene", "blackened", "dying skin",
         "foul smell", "rotting smell", "gas", "bubbles",
         "dizzy", "passed out", "fainting", "confusion", "unconscious", "breathless",
+        "sepsis", "septic", "septic shock",
+        // Romanized Indic
+        "tez bukhar", "bukhar", "bukhaar", "kaala pad", "kala pad", "black ho gaya",
+        "kaala ho gaya", "sad raha hai", "badbu", "behoshi", "behos", "chakkad",
+        "kaal karuppu", "rotting", "necrotic",
+        // Indic native scripts
         "बुखार", "कांपना", "काली त्वचा", "गैंग्रीन", "बेहोश", // Hindi
-        "காய்ச்சல்", "நடுக்கம்", "கருப்பு தோல்", // Tamil
-        "జ్వరం", "వణుకు", "నల్లటి చర్మం", // Telugu
-        "ಜ್ವರ", "ನಡುಕ", "ಕಪ್ಪು ಚರ್ಮ", // Kannada
-        "জ্বর", "কাঁপুনি", "কালো চামড়া", // Bengali
-        "ताप", "थंडी", "काळी त्वचा" // Marathi
+        "காய்ச்சல்", "நடுக்கம்", "கருப்பு தோல்", "கேங்க்ரீன்", // Tamil
+        "జ్వరం", "వణుకు", "నల్లటి చర్మం", "గ్యాంగ్రీన్", // Telugu
+        "ಜ್ವರ", "ನಡುಕ", "ಕಪ್ಪು ಚರ್ಮ", "ಗ್ಯಾಂಗ್ರೀನ್", // Kannada
+        "জ্বর", "কাঁপুনি", "কালো চামড়া", "গ্যাংগ্রিন", // Bengali
+        "ताप", "थंडी", "काळी त्वचा", "गँगरीन", // Marathi
+        "പനി", "വിറയൽ", "കറുത്ത തൊലി", "ഗാംഗ്രീൻ", // Malayalam
+        "તાવ", "ધ્રૂજારી", "કાળી ચામડી", "ગેંગરીન" // Gujarati
     )
 
     private val DIAGNOSIS_KEYWORDS = listOf(
+        // English
         "diagnose", "diagnosis", "what disease", "is it cancer", "is this gangrene",
         "will i lose my foot", "amputation", "amputate", "will they cut my leg",
         "tell me if it is", "what is wrong with me", "what condition",
-        "निदान", "क्या यह कैंसर है", "क्या पैर कटेगा",
-        "நோய் கண்டறிதல்", "கால் வெட்டப்படுமா",
-        "రోగ నిర్ధారణ", "కాల్ తీసివేస్తారా"
+        // Romanized Indic
+        "kya cancer", "cancer hai", "pair katega", "pair kaatna", "leg cut",
+        "amputation hoga", "amputate karna", "kya bimari", "bimari batao",
+        "rog kya hai", "kaal vettuvangala", "diagnose karo", "batao kya hua hai",
+        // Adversarial prompt injection defense
+        "ignore previous instructions", "ignore all instructions", "system prompt",
+        "developer instructions", "jailbreak", "act as a doctor", "pretend to be a doctor",
+        "you are now a doctor", "diagnose me anyway",
+        // Indic native scripts
+        "निदान", "क्या यह कैंसर है", "क्या पैर कटेगा", // Hindi
+        "நோய் கண்டறிதல்", "கால் வெட்டப்படுமா", "புற்றுநோயா", // Tamil
+        "రోగ నిర్ధారణ", "కాల్ తీసివేస్తారా", "క్యాన్సరా", // Telugu
+        "ರೋಗನಿರ್ಣಯ", "ಕಾಲು ಕತ್ತರಿಸಬೇಕಾಗುತ್ತಾ", "ಕ್ಯಾನ್ಸರ್ ಇದೆಯೇ", // Kannada
+        "রোগ নির্ণয়", "পা কাটতে হবে", "ক্যান্সার কি", // Bengali
+        "वैद्यकीय निदान", "पाय कापावा लागेल का", "कॅन्सर आहे का", // Marathi
+        "രോഗനിർണയം", "ക്യാൻസർ ആണോ", "കാൽ മുറിക്കുമോ", // Malayalam
+        "નિદાન", "કેન્સર છે", "પગ કાપવો પડશે" // Gujarati
     )
 
     private val PRESCRIPTION_KEYWORDS = listOf(
+        // English
         "antibiotic", "prescription", "prescribe", "what medicine", "what tablet",
         "which ointment", "home remedy", "turmeric", "honey", "dettol",
-        "what pills", "how to cure", "cure it myself",
-        "दवा", "एंटीबायोटिक", "इलाज", "गोली", "हल्दी",
-        "மருந்து", "மாத்திரை", "ஆன்டிபயாடிக்",
-        "మందు", "టాబ్లెట్", "యాంటీబయాటిక్"
+        "what pills", "how to cure", "cure it myself", "pain killer", "painkiller",
+        // Romanized Indic
+        "dawa", "dawai", "goli", "kaun si dawa", "kya dawai lu", "kya dava lu",
+        "dawa batao", "antibiotic du", "marunthu", "mandulu", "haldi lagau",
+        "turmeric lagau", "dettol lagau", "gharelu nuskha", "totka", "malham",
+        "konsi goli", "kya karu", "tang me dard bahut jyada hai kya karu",
+        "kaal romba valikudhu",
+        // Indic native scripts
+        "दवा", "एंटीबायोटिक", "इलाज", "गोली", "हल्दी", "मरहम", // Hindi
+        "மருந்து", "மாத்திரை", "ஆன்டிபயாடிக்", "மஞ்சள்", // Tamil
+        "మందు", "టాబ్లెట్", "యాంటీబయాటిక్", "పసుపు", // Telugu
+        "ಔಷಧಿ", "ಮಾತ್ರೆ", "ಆಂಟಿಬಯೋಟಿಕ್", "ಅರಿಶಿನ", // Kannada
+        "ওষুধ", "ট্যাবলেট", "অ্যান্টিবায়োটিক", "হলুদ", // Bengali
+        "औषध", "गोळी", "अँटिबायोटिक", "हળદ", // Marathi
+        "മരുന്ന്", "ഗുളിക", "ആന്റിബയോട്ടിക്", "മഞ്ഞൾ", // Malayalam
+        "દવા", "ગોળી", "એન્ટિબાયોટિક", "હળદર" // Gujarati
     )
 
     /**
@@ -98,7 +135,11 @@ object SafetyGuardrails {
             "জরুরী সতর্কতা: গুরুতর সংক্রমণ বা জ্বরের লক্ষণ সনাক্ত হয়েছে। অবিলম্বে নিকটস্থ জরুরি বিভাগে বা হাসপাতালে যান।"
         Language.MARATHI ->
             "तातडीचा इशारा: गंभीर संसर्ग किंवा तापाची लक्षणे आढळली आहेत. कृपया त्वरित जवळच्या रुग्णालयात किंवा आपत्कालीन विभागात जावे."
-        else ->
+        Language.MALAYALAM ->
+            "അടിയന്തിര മുന്നറിയിപ്പ്: ഗുരുതരമായ അണുബാധ അല്ലെങ്കിൽ ഉയർന്ന പനിയുടെ ലക്ഷണങ്ങൾ കണ്ടെത്തിയിട്ടുണ്ട്. ദയവായി ഉടൻ തന്നെ അടുത്തുള്ള അത്യാഹിത വിഭാഗത്തിലോ ആശുപത്രിയിലോ ചികിത്സ തേടുക."
+        Language.GUJARATI ->
+            "તાકીદની ચેતવણી: ગંભીર ચેપ અથવા તાવના લક્ષણો જણાયા છે. કૃપા કરીને તાત્કાલિક નજીકની ઇમરજન્સી હોસ્પિટલમાં જાવ."
+        Language.ENGLISH ->
             "EMERGENCY WARNING: Signs of systemic or rapidly progressing infection detected (such as fever or severe spread). Please seek immediate urgent medical care or visit the nearest emergency room immediately."
     }
 
@@ -115,7 +156,11 @@ object SafetyGuardrails {
             "আমি কেবল একটি প্রাথমিক ট্রায়াজ সহায়ক এবং কোনো রোগ নির্ণয় করতে পারি না। দয়া করে একজন অভিজ্ঞ চিকিৎসকের পরামর্শ নিন।"
         Language.MARATHI ->
             "मी केवळ एक ट्रायज सहाय्यक आहे आणि वैद्यकीय निदान करू शकत नाही. कृपया अचूक तपासणीसाठी योग्य डॉक्टरांचा सल्ला घ्या."
-        else ->
+        Language.MALAYALAM ->
+            "ഞാൻ ഒരു പ്രാഥമിക ട്രയാജ് സഹായി മാത്രമാണ്, രോഗനിർണയം നടത്താൻ കഴിയില്ല. ഒരു വിദഗ്ദ്ധ ഡോക്ടർക്ക് മാത്രമേ നിങ്ങളുടെ മുറിവ് ശരിയായി പരിശോധിക്കാൻ സാധിക്കൂ."
+        Language.GUJARATI ->
+            "હું માત્ર એક ટ્રાયઝ સહાયક છું અને તબીબી નિદાન કરી શકતો નથી. ફક્ત લાયક ડૉક્ટર જ તમારા ઘાની યોગ્ય તપાસ કરી શકે છે."
+        Language.ENGLISH ->
             "I am an automated triage assistant and cannot diagnose medical conditions or predict clinical outcomes. Only a licensed doctor can assess your wound. We will generate a Case Sheet for your doctor's review."
     }
 
@@ -132,7 +177,11 @@ object SafetyGuardrails {
             "আমি কোনো অ্যান্টিবায়োটিক বা ওষুধ প্রেসক্রাইব করতে পারি না। ভুল ওষুধ মারাত্মক ক্ষতি করতে পারে, অবিলম্বে চিকিৎসকের পরামর্শ নিন।"
         Language.MARATHI ->
             "मी कोणतीही औषधे किंवा घरगुती उपाय सुचवू शकत नाही. कृपया डॉक्टरांच्या सल्ल्याशिवाय कोणतीही औषधे घेऊ नका."
-        else ->
+        Language.MALAYALAM ->
+            "എനിക്ക് മരുന്നുകളോ ആൻറിബയോട്ടിക്കുകളോ നിർദ്ദേശിക്കാൻ കഴിയില്ല. ഡോക്ടറുടെ നിർദ്ദേശമില്ലാതെ മരുന്നുകൾ കഴിക്കുന്നത് അപകടകരമാണ്."
+        Language.GUJARATI ->
+            "હું કોઈ દવા અથવા એન્ટિબાયોટિક લખી શકતો નથી. ડૉક્ટરની સલાહ વિના દવા લેવી જોખમી સાબિત થઈ શકે છે."
+        Language.ENGLISH ->
             "I cannot prescribe antibiotics, medications, or home remedies. Self-treating diabetic wounds carries high risk of complications. Please consult a qualified doctor for appropriate treatment."
     }
 
@@ -149,7 +198,11 @@ object SafetyGuardrails {
             "সার্বজনীন সুপারিশ: এই মূল্যায়ন ডাক্তারের বিকল্প নয়। সঠিক পরীক্ষা ও চিকিৎসার জন্য এই কেস শীট নিয়ে অবিলম্বে একজন ডাক্তারের সাথে পরামর্শ করুন।"
         Language.MARATHI ->
             "सर्वसमावेशक शिफारस: हे मूल्यांकन डॉक्टरांच्या सल्ल्याचा पर्याय नाही. प्रत्यक्ष तपासणीसाठी या केस शीटसह पात्र डॉक्टरांना भेटावे."
-        else ->
+        Language.MALAYALAM ->
+            "സാര്‍വത്രിക ശുപാർശ: ഈ ട്രയാജ് മൂല്യനിർണ്ണയം ഡോക്ടറുടെ പരിശോധനയ്ക്ക് പകരമാവില്ല. ശരിയായ പരിശോധനയ്ക്കായി ഈ കേസ് ഷീറ്റുമായി എത്രയും വേഗം ഡോക്ടറെ കാണുക."
+        Language.GUJARATI ->
+            "સાર્વત્રિક ભલામણ: આ મૂલ્યાંકન ડૉક્ટરની સલાહનો વિકલ્પ નથી. યોગ્ય તપાસ માટે આ કેસ શીટ સાથે લાયક ડૉક્ટરને મળો."
+        Language.ENGLISH ->
             "UNIVERSAL REFERRAL: This triage evaluation is strictly informational and does not replace professional medical judgment. Regardless of score, we recommend presenting this Case Sheet and wound image to a qualified physician or foot care specialist for an in-person clinical examination."
     }
 }

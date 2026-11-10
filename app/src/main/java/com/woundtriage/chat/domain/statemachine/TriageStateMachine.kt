@@ -71,6 +71,16 @@ class TriageStateMachine(
     }
 
     /**
+     * Constructs the structured prompt for on-device LLM generation adhering to safety and language guidelines.
+     */
+    fun constructLlmPrompt(dimension: SinbadDimension, baselineHint: String? = null): String {
+        val hintText = if (!baselineHint.isNullOrBlank()) " Preliminary image indicator: $baselineHint." else ""
+        return "You are an empathetic medical triage assistant. You must converse strictly in ${language.englishName} (${language.nativeName}). " +
+                "Ask exactly 1 clear, compassionate question about diabetic foot ulcer ${dimension.title} dimension using simple colloquial terms without medical jargon.$hintText " +
+                "Do not diagnose. Do not prescribe medication."
+    }
+
+    /**
      * Processes a user message in response to the current triage question.
      * Returns a list of generated reply messages and updates internal state.
      */
@@ -87,13 +97,17 @@ class TriageStateMachine(
 
         val dim = currentState.currentDimension
         val outgoingMessages = mutableListOf<ChatMessage>()
+        var emergencyDetected = false
 
         // 1. Evaluate Medical Safety Guardrails
         when (val safetyResult = SafetyGuardrails.evaluate(userText, language)) {
             is SafetyCheckResult.Emergency -> {
+                emergencyDetected = true
+                val symptoms = (assessment.reportedSymptoms + safetyResult.reason).distinct()
                 assessment = assessment.copy(
                     emergencyFlag = true,
-                    emergencyReason = safetyResult.reason
+                    emergencyReason = safetyResult.reason,
+                    reportedSymptoms = symptoms
                 )
                 outgoingMessages.add(
                     ChatMessage(
@@ -140,7 +154,16 @@ class TriageStateMachine(
 
         val updatedPatientScores = assessment.patientScores.toMutableMap()
         updatedPatientScores[dim] = confirmation
-        assessment = assessment.copy(patientScores = updatedPatientScores)
+
+        // Record patient symptoms in symptom ledger if mentioned
+        val newSymptoms = assessment.reportedSymptoms.toMutableList()
+        if (score == 1 && !newSymptoms.contains(clinicalSummary)) {
+            newSymptoms.add(clinicalSummary)
+        }
+        assessment = assessment.copy(
+            patientScores = updatedPatientScores,
+            reportedSymptoms = newSymptoms
+        )
 
         // 3. Move to next dimension or complete
         currentDimensionIndex++
@@ -154,14 +177,10 @@ class TriageStateMachine(
                 assessment.classifierScores[nextDim]?.rationale
             )
 
-            val acknowledgment = when (language) {
-                Language.HINDI -> "धन्यवाद, मैंने यह नोट कर लिया है।"
-                Language.TAMIL -> "நன்றி, குறிப்பெடுத்துக் கொண்டேன்."
-                Language.TELUGU -> "ధన్యవాదాలు, నేను దీనిని నమోదు చేసుకున్నాను."
-                Language.KANNADA -> "ಧನ್ಯವಾದಗಳು, ಇದನ್ನು ದಾಖಲಿಸಲಾಗಿದೆ."
-                Language.BENGALI -> "ধন্যবাদ, এটি লিপিবদ্ধ করেছি।"
-                Language.MARATHI -> "धन्यवाद, मी हे नोंदवले आहे."
-                else -> "Thank you, I have noted that."
+            val acknowledgment = if (emergencyDetected) {
+                getEmergencyAcknowledgment(language)
+            } else {
+                getStandardAcknowledgment(language)
             }
 
             outgoingMessages.add(
@@ -187,7 +206,11 @@ class TriageStateMachine(
                     "সমস্ত ৬টি প্রশ্ন সম্পন্ন হয়েছে। আপনার কেস শীট তৈরি হয়েছে। দয়া করে এটি আপনার ডাক্তারকে দেখান।"
                 Language.MARATHI ->
                     "सर्व 6 प्रश्न पूर्ण झाले आहेत. तुमची केस शीट तयार झाली आहे. कृपया ही तुमच्या डॉक्टरांना दाखवा."
-                else ->
+                Language.MALAYALAM ->
+                    "എല്ലാ 6 ചോദ്യങ്ങളും പൂർത്തിയായി. നിങ്ങളുടെ കേസ് ഷീറ്റ് തയ്യാറായിക്കഴിഞ്ഞു. ഇത് നിങ്ങളുടെ ഡോക്ടറെ കാണിക്കുക."
+                Language.GUJARATI ->
+                    "બધા 6 પ્રશ્નો પૂર્ણ થયા છે. તમારી કેસ શીટ તૈયાર છે. કૃપા કરીને આ તમારા ડૉક્ટરને બતાવો."
+                Language.ENGLISH ->
                     "All 6 triage questions have been answered. Your comprehensive Case Sheet is ready below for your doctor's review."
             }
 
@@ -202,6 +225,30 @@ class TriageStateMachine(
         }
 
         return outgoingMessages
+    }
+
+    private fun getStandardAcknowledgment(language: Language): String = when (language) {
+        Language.HINDI -> "धन्यवाद, मैंने यह नोट कर लिया है।"
+        Language.TAMIL -> "நன்றி, குறிப்பெடுத்துக் கொண்டேன்."
+        Language.TELUGU -> "ధన్యవాదాలు, నేను దీనిని నమోదు చేసుకున్నాను."
+        Language.KANNADA -> "ಧನ್ಯವಾದಗಳು, ಇದನ್ನು ದಾಖಲಿಸಲಾಗಿದೆ."
+        Language.BENGALI -> "ধন্যবাদ, এটি লিপিবদ্ধ করেছি।"
+        Language.MARATHI -> "धन्यवाद, मी हे नोंदवले आहे."
+        Language.MALAYALAM -> "നന്ദി, ഞാൻ ഇത് രേഖപ്പെടുത്തിയിട്ടുണ്ട്."
+        Language.GUJARATI -> "આભાર, મેં આ નોંધી લીધું છે."
+        Language.ENGLISH -> "Thank you, I have noted that."
+    }
+
+    private fun getEmergencyAcknowledgment(language: Language): String = when (language) {
+        Language.HINDI -> "चेतावनी: आपके बताए लक्षण गंभीर हो सकते हैं। कृपया तुरंत आपातकालीन चिकित्सा सहायता लें। डॉक्टर के लिए केस शीट जारी रखने हेतु:"
+        Language.TAMIL -> "எச்சரிக்கை: நீங்கள் குறிப்பிட்ட அறிகுறிகள் அவசரமானவை. உடனடியாக மருத்துவமனைக்கு செல்லவும். அறிக்கையை தொடர:"
+        Language.TELUGU -> "హెచ్చరిక: మీరు పేర్కొన్న లక్షణాలు తీవ్రమైనవి కావచ్చు. దయచేసి వెంటనే అత్యవసర సంరక్షణ పొందండి. తదుపరి ప్రశ్న:"
+        Language.KANNADA -> "ಎಚ್ಚರಿಕೆ: ನೀವು ತಿಳಿಸಿದ ಲಕ್ಷಣಗಳು ಗಂಭೀರವಾಗಿರಬಹುದು. ದಯವಿಟ್ಟು ತಕ್ಷಣವೇ ತುರ್ತು ಚಿಕಿತ್ಸೆ ಪಡೆಯಿರಿ. ಮುಂದಿನ ಪ್ರಶ್ನೆ:"
+        Language.BENGALI -> "সতর্কতা: লক্ষণগুলি গুরুতর হতে পারে। অবিলম্বে জরুরি চিকিৎসা নিন। রিপোর্ট সম্পন্ন করার জন্য:"
+        Language.MARATHI -> "इशारा: आपण सांगितलेली लक्षणे गंभीर असू शकतात. त्वरित वैद्यकीय मदत घ्या. पुढील प्रश्न:"
+        Language.MALAYALAM -> "മുന്നറിയിപ്പ്: നിങ്ങൾ പറഞ്ഞ ലക്ഷണങ്ങൾ ഗൗരവമുള്ളതാകാം. ഉടൻ അടിയന്തിര വൈദ്യസഹായം തേടുക. അടുത്ത ചോദ്യം:"
+        Language.GUJARATI -> "ચેતવણી: તમે જણાવેલા લક્ષણો ગંભીર હોઈ શકે છે. કૃપા કરીને તાત્કાલિક સારવાર લો. આગળનો પ્રશ્ન:"
+        Language.ENGLISH -> "NOTE: High-risk symptoms noted. Please seek immediate urgent medical care. To complete the Case Sheet for the doctor:"
     }
 
     fun getCurrentAssessment(): SinbadAssessment = assessment
