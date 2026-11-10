@@ -2,7 +2,6 @@ package com.woundtriage.chat.ui.screens
 
 import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -24,7 +23,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.PictureAsPdf
-import androidx.compose.material.icons.filled.Print
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Warning
@@ -55,7 +53,6 @@ import com.woundtriage.chat.domain.model.SinbadDimension
 import com.woundtriage.chat.ui.theme.EmergencyRed
 import com.woundtriage.chat.ui.theme.EmergencyRedBg
 import com.woundtriage.chat.ui.theme.TealPrimary
-import com.woundtriage.chat.ui.theme.WarningAmber
 import com.woundtriage.chat.ui.theme.WarningAmberBg
 import com.woundtriage.chat.ui.viewmodel.TriageUiState
 import java.io.File
@@ -222,7 +219,30 @@ fun CaseSheetScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(18.dp))
+            // Reported Symptoms Section if available
+            if (assessment.reportedSymptoms.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(Color(0xFFF8FAFC))
+                        .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(8.dp))
+                        .padding(12.dp)
+                ) {
+                    Column {
+                        Text("Patient-Reported Symptoms", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = Color(0xFF1E293B))
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = assessment.reportedSymptoms.joinToString(" • "),
+                            fontSize = 11.sp,
+                            color = Color(0xFF475569)
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             // SINBAD Comparative Verification Checklist
             Text(

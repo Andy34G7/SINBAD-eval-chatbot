@@ -2,14 +2,11 @@ package com.woundtriage.chat.ui.viewmodel
 
 import android.app.Application
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.woundtriage.chat.data.classifier.HeuristicVisionClassifier
 import com.woundtriage.chat.data.classifier.LiteRtVisionClassifier
 import com.woundtriage.chat.data.classifier.WoundVisionClassifier
 import com.woundtriage.chat.data.llm.MediaPipeLlmEngine
-import com.woundtriage.chat.data.llm.MockTriageLlmEngine
 import com.woundtriage.chat.data.llm.TriageLlmEngine
 import com.woundtriage.chat.data.pdf.CaseSheetPdfGenerator
 import com.woundtriage.chat.domain.model.ChatMessage
@@ -71,10 +68,11 @@ class TriageViewModel(
     }
 
     fun setLanguage(language: Language) {
-        _uiState.update { it.copy(selectedLanguage = language) }
+        val currentAssessment = _uiState.value.assessment.copy(patientLanguage = language)
+        _uiState.update { it.copy(selectedLanguage = language, assessment = currentAssessment) }
         stateMachine = TriageStateMachine(
             language = language,
-            initialAssessment = _uiState.value.assessment.copy(patientLanguage = language)
+            initialAssessment = currentAssessment
         )
     }
 
@@ -134,7 +132,7 @@ class TriageViewModel(
             val responseMessages = stateMachine.processUserMessage(trimmed)
             val updatedAssessment = stateMachine.getCurrentAssessment()
 
-            // Handle streaming simulation for assistant response if available
+            val finalMessages = mutableListOf<ChatMessage>()
             for (msg in responseMessages) {
                 if (msg.sender == MessageSender.ASSISTANT) {
                     val streamFlow = llmEngine.generateStream(msg.text)
@@ -143,12 +141,15 @@ class TriageViewModel(
                         accumulated += token
                         _uiState.update { it.copy(streamingText = accumulated) }
                     }
+                    finalMessages.add(msg.copy(text = accumulated.ifEmpty { msg.text }))
+                } else {
+                    finalMessages.add(msg)
                 }
             }
 
             _uiState.update {
                 it.copy(
-                    messages = it.messages + responseMessages,
+                    messages = it.messages + finalMessages,
                     assessment = updatedAssessment,
                     triageState = stateMachine.state,
                     isStreaming = false,
