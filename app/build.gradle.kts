@@ -46,6 +46,10 @@ android {
         compose = true
     }
 
+    androidResources {
+        noCompress += listOf("bin", "task", "tflite")
+    }
+
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.11"
     }
