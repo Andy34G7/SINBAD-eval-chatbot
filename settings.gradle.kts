@@ -13,5 +13,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "WoundTriageChat"
+rootProject.name = "SINBAD-eval-chatbot"
 include(":app")
